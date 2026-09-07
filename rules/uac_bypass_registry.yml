@@ -1,0 +1,14 @@
+title: UAC bypass via shell open command hijack
+id: uac_bypass_registry
+attack: T1548.002
+severity: high
+description: Registry handler hijacked so an auto-elevating binary runs attacker code.
+detection:
+  EventID: {equals_any: ["12", "13", "14"]}
+  TargetObject:
+    contains_any:
+      - 'ms-settings\shell\open\command'
+      - 'mscfile\shell\open\command'
+      - 'Folder\shell\open\command'
+      - 'exefile\shell\open\command'
+      - 'AppX82a6gwre4fdg3bt635tn5ctqjf8msdd2\Shell'

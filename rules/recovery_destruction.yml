@@ -1,0 +1,16 @@
+title: Backup or recovery destruction
+id: recovery_destruction
+attack: T1490
+severity: critical
+description: Shadow copy and recovery deletion, a ransomware precursor.
+detection:
+  EventID: {equals: "1"}
+  CommandLine:
+    contains_any:
+      - 'delete shadows'
+      - 'delete catalog'
+      - 'recoveryenabled no'
+      - 'bootstatuspolicy ignoreallfailures'
+      - 'wbadmin delete'
+      - 'wevtutil cl'
+      - 'resize shadowstorage'

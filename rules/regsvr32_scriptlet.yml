@@ -1,0 +1,10 @@
+title: Regsvr32 scriptlet proxy execution
+id: regsvr32_scriptlet
+attack: T1218.010
+severity: high
+description: Regsvr32 registering a remote or local scriptlet (Squiblydoo).
+detection:
+  EventID: {equals: "1"}
+  Image: {contains_any: [regsvr32.exe]}
+  CommandLine:
+    contains_any: [scrobj.dll, '/i:http', '/i:ftp', '.sct', 'scrobj']

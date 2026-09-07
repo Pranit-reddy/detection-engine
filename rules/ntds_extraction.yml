@@ -1,0 +1,9 @@
+title: Active Directory database extraction
+id: ntds_extraction
+attack: T1003.003
+severity: critical
+description: Attempt to copy NTDS.dit, the domain credential store.
+detection:
+  EventID: {equals: "1"}
+  CommandLine:
+    contains_any: ['ntds.dit', ntdsutil, 'ac i ntds', 'create shadow', 'copy \\\\?\\GLOBALROOT']

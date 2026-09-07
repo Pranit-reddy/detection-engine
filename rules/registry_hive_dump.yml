@@ -1,0 +1,8 @@
+title: SAM or SECURITY registry hive exported
+id: registry_hive_dump
+attack: T1003.002
+severity: critical
+description: Offline credential theft by saving registry hives to disk.
+detection:
+  EventID: {equals: "1"}
+  CommandLine: {contains_all: [save, 'hklm']}

@@ -1,0 +1,39 @@
+title: Multiple distinct reconnaissance utilities
+id: discovery_recon_burst
+attack: T1082
+severity: medium
+description: >
+  Three or more distinct built-in enumeration utilities executed within the
+  same capture. Any one of these is routine administrative activity; several
+  in combination is characteristic of an operator orienting on a newly
+  accessed host.
+tuning_notes: >
+  Originally matched any single recon binary and fired on 21 files, almost
+  all of them spuriously. Rewritten as a threshold rule requiring three
+  distinct Image values. This is a per-file approximation of what should be
+  a time-windowed, per-host correlation; the corpus provides no continuous
+  timeline to window against, so file boundary is used as a proxy and the
+  rule would need rewriting against live telemetry.
+logsource:
+  channel: Microsoft-Windows-Sysmon/Operational
+detection:
+  EventID: {equals: "1"}
+  Image:
+    contains_any:
+      - whoami.exe
+      - nltest.exe
+      - systeminfo.exe
+      - 'net1.exe'
+      - 'net.exe'
+      - quser.exe
+      - 'arp.exe'
+      - 'route.exe'
+      - netstat.exe
+      - 'dsquery.exe'
+      - 'adfind.exe'
+      - 'ipconfig.exe'
+      - 'tasklist.exe'
+      - 'hostname.exe'
+threshold:
+  distinct_field: Image
+  min_count: 3

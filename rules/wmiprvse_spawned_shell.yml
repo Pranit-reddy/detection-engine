@@ -1,0 +1,9 @@
+title: WMI provider host spawned a shell
+id: wmiprvse_spawned_shell
+attack: T1047
+severity: high
+description: Child shells under WmiPrvSE indicate remote WMI command execution.
+detection:
+  EventID: {equals: "1"}
+  ParentImage: {contains_any: [wmiprvse.exe, 'services.exe', 'wsmprovhost.exe']}
+  Image: {contains_any: [cmd.exe, powershell.exe, wscript.exe, cscript.exe, mshta.exe, rundll32.exe]}

@@ -1,0 +1,9 @@
+title: Service created from command line
+id: service_creation_commandline
+attack: T1543.003
+severity: high
+description: sc.exe used to create a service, often remotely for lateral movement.
+detection:
+  EventID: {equals: "1"}
+  Image: {contains_any: ['sc.exe']}
+  CommandLine: {contains_any: [create, config, 'binpath']}

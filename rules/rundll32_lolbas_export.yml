@@ -1,0 +1,20 @@
+title: Rundll32 invoking a known-abused export
+id: rundll32_lolbas_export
+attack: T1218.011
+severity: high
+description: Rundll32 calling documented exports used for proxy execution.
+detection:
+  EventID: {equals: "1"}
+  Image: {contains_any: [rundll32.exe]}
+  CommandLine:
+    contains_any:
+      - 'zipfldr.dll,RouteTheCall'
+      - 'shdocvw.dll,OpenURL'
+      - 'advpack.dll,RegisterOCX'
+      - 'ieadvpack.dll,RegisterOCX'
+      - 'pcwutl.dll,LaunchApplication'
+      - 'url.dll,FileProtocolHandler'
+      - 'shell32.dll,ShellExec_RunDLL'
+      - 'shell32.dll,Control_RunDLL'
+      - 'dfshim.dll,ShOpenVerbApplication'
+      - 'javascript:'

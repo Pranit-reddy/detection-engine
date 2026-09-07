@@ -1,0 +1,15 @@
+title: Autostart registry key modified
+id: registry_run_key_persistence
+attack: T1547.001
+severity: medium
+description: A value was written to a registry location that executes at boot or logon.
+detection:
+  EventID: {equals_any: ["12", "13", "14"]}
+  TargetObject:
+    contains_any:
+      - 'CurrentVersion\Run'
+      - 'CurrentVersion\RunOnce'
+      - 'Winlogon\Shell'
+      - 'Winlogon\Userinit'
+      - 'CurrentVersion\Explorer\User Shell Folders'
+      - 'Image File Execution Options'

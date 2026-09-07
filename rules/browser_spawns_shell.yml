@@ -1,0 +1,28 @@
+title: Browser or Office application spawned a shell
+id: browser_spawns_shell
+attack: T1203
+severity: high
+description: >
+  A browser or mail client launched a command interpreter. These
+  applications render content; they do not legitimately execute
+  shell commands. Strong indicator of exploitation or a malicious
+  attachment.
+detection:
+  EventID:
+    equals: "1"
+  ParentImage:
+    contains_any:
+      - iexplore.exe
+      - chrome.exe
+      - firefox.exe
+      - msedge.exe
+      - outlook.exe
+      - winword.exe
+      - excel.exe
+  Image:
+    contains_any:
+      - cmd.exe
+      - powershell.exe
+      - wscript.exe
+      - cscript.exe
+      - mshta.exe

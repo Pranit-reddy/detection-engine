@@ -1,0 +1,9 @@
+title: Mshta executing remote or inline script
+id: mshta_remote_execution
+attack: T1218.005
+severity: high
+description: Mshta running script content rather than a local HTA file.
+detection:
+  EventID: {equals: "1"}
+  Image: {contains_any: [mshta.exe]}
+  CommandLine: {contains_any: ['http', 'javascript:', 'vbscript:', 'about:']}

@@ -1,0 +1,15 @@
+title: Remote thread created in another process
+id: create_remote_thread
+attack: T1055
+severity: high
+confidence: low
+description: Classic process injection primitive.
+corpus_caveat: >
+  Matches every Sysmon EventID 8 with no filtering on source or target
+  process. Legitimate software including debuggers, security agents and
+  installers creates remote threads routinely. Needs SourceImage
+  allowlisting and StartModule inspection before it is alertable.
+logsource:
+  channel: Microsoft-Windows-Sysmon/Operational
+detection:
+  EventID: {equals: "8"}

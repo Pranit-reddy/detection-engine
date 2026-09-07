@@ -1,0 +1,8 @@
+title: Remote execution via WMI
+id: wmi_remote_execution
+attack: T1047
+severity: high
+description: WMI invoked against a remote host, or WMI spawning a shell locally.
+detection:
+  EventID: {equals: "1"}
+  CommandLine: {contains_any: ['/node:', 'process call create', 'invoke-wmimethod', 'invoke-cimmethod']}

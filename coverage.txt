@@ -1,0 +1,51 @@
+
+
+TACTIC                        FILES  CAUGHT  COVERAGE
+------------------------------------------------------
+AutomatedTestingTools             8       7       88%
+Command and Control               6       1       17%
+Credential Access                39      21       54%
+Defense Evasion                  36      12       33%
+Discovery                        11       4       36%
+Execution                        34      19       56%
+Lateral Movement                 47      16       34%
+Other                             8       0        0%
+Persistence                      22      10       45%
+Privilege Escalation             66      25       38%
+Uncategorized                     1       0        0%
+------------------------------------------------------
+OVERALL                         278     115       41%
+
+HEADLINE COVERAGE                      41%
+SUBSTANTIVE COVERAGE                   30%
+(files carried by low-confidence only)     31
+
+RULE                                     FILES HIT
+---------------------------------------------------
+browser_spawns_shell                             4
+create_remote_thread (low conf)                 10
+credential_dump_commandline                      3
+discovery_recon_burst                            3
+event_log_cleared (low conf)                    26
+lolbin_download                                  2
+lsass_process_access                            13
+lsass_query_only_access (low conf)               1
+mshta_remote_execution                           2
+ntds_extraction                                  1
+powershell_suspicious_flags                      5
+psexec_lateral_movement                          4
+recovery_destruction                             1
+registry_hive_dump                               1
+registry_run_key_persistence                     9
+regsvr32_scriptlet                               5
+rundll32_lolbas_export                          11
+scheduled_task_creation                          8
+service_creation_commandline                     1
+service_installed                                2
+uac_bypass_parent                                8
+uac_bypass_registry                              6
+unbacked_call_trace                             24
+wmi_event_subscription                           3
+wmi_remote_execution                             1
+wmiprvse_spawned_shell                           9
+xsl_script_execution                             4

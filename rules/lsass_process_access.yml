@@ -1,0 +1,39 @@
+title: LSASS memory read access
+id: lsass_process_access
+attack: T1003.001
+severity: critical
+description: >
+  A process obtained a handle to LSASS with memory read or write rights.
+  LSASS holds plaintext credentials, hashes and Kerberos tickets, so a
+  read handle is a precondition for credential dumping. Handles granting
+  only query rights are excluded, as monitoring and inventory tools
+  request those routinely.
+tuning_notes: >
+  GrantedAccess is filtered to require PROCESS_VM_READ (0x10),
+  PROCESS_VM_WRITE (0x20) or PROCESS_VM_OPERATION (0x08). Values such as
+  0x1000 and 0x1400 are query-only and cannot reach credential material.
+  SourceImage exclusions cover Windows components that legitimately read
+  LSASS. Path-based exclusion is bypassable by an attacker who names their
+  binary to match, so in production these should be paired with signature
+  or hash verification.
+  Validated failure: in ppl_bypass_ppldump_knowdll_hijack, the attacker
+  executed inside services.exe via a KnownDlls hijack and opened LSASS with
+  PROCESS_ALL_ACCESS. The SourceImage exclusion suppressed it. Path-based
+  allowlisting cannot survive code injection into an allowlisted process;
+  production deployment requires signature verification, image load
+  correlation, or exclusion by parent lineage rather than path alone.
+logsource:
+  channel: Microsoft-Windows-Sysmon/Operational
+detection:
+  EventID: {equals: "10"}
+  TargetImage: {contains_any: [lsass.exe]}
+  GrantedAccess: {bitmask_any: ["0x10", "0x20", "0x08"]}
+  SourceImage:
+    not_contains:
+      - '\wbem\wmiprvse.exe'
+      - '\windows\system32\csrss.exe'
+      - '\windows\system32\wininit.exe'
+      - '\windows\system32\services.exe'
+      - '\windows\system32\lsass.exe'
+      - '\windowsdefender\msmpeng.exe'
+      - '\windows defender\msmpeng.exe'

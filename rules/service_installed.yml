@@ -1,0 +1,9 @@
+title: Windows service created
+id: service_installed
+attack: T1543.003
+severity: medium
+description: Service creation grants SYSTEM-level execution and survives reboot.
+logsource:
+  provider: Service Control Manager
+detection:
+  EventID: {equals_any: ["7045", "4697"]}

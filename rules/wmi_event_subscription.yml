@@ -1,0 +1,9 @@
+title: WMI event subscription created
+id: wmi_event_subscription
+attack: T1546.003
+severity: high
+description: WMI subscriptions provide fileless, trigger-based persistence.
+logsource:
+  channel: Microsoft-Windows-Sysmon/Operational
+detection:
+  EventID: {equals_any: ["19", "20", "21"]}

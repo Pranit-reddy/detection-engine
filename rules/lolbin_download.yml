@@ -1,0 +1,18 @@
+title: Download via living-off-the-land binary
+id: lolbin_download
+attack: T1105
+severity: high
+description: Signed Microsoft binaries used to retrieve remote payloads.
+detection:
+  EventID: {equals: "1"}
+  CommandLine:
+    contains_any:
+      - '-urlcache'
+      - 'urlcache -f'
+      - 'bitsadmin /transfer'
+      - downloadstring
+      - downloadfile
+      - 'invoke-webrequest'
+      - 'desktopimgdownldr'
+      - 'certutil -decode'
+      - 'start-bitstransfer'

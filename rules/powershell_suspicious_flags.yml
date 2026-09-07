@@ -1,0 +1,19 @@
+title: PowerShell with encoded or hidden execution flags
+id: powershell_suspicious_flags
+attack: T1059.001
+severity: high
+description: Flag combinations typical of automated payloads, not interactive use.
+detection:
+  EventID: {equals: "1"}
+  CommandLine:
+    contains_any:
+      - '-encodedcommand'
+      - ' -enc '
+      - ' -e jab'
+      - frombase64string
+      - '-w hidden'
+      - '-windowstyle hidden'
+      - '-nop '
+      - '-noprofile -e'
+      - 'iex('
+      - 'invoke-expression'

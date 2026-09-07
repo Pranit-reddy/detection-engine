@@ -1,0 +1,30 @@
+title: LSASS handle opened without read rights
+id: lsass_query_only_access
+attack: T1003.001
+severity: medium
+confidence: low
+description: >
+  A process opened a handle to LSASS granting only query rights. This
+  cannot itself read credential material, but several tools including
+  PPLdump open a query handle before escalating by other means.
+tuning_notes: >
+  Retained as a separate low-confidence rule after the primary LSASS rule
+  was tightened to require PROCESS_VM_READ. That tightening silently
+  dropped a PPLdump sample whose only handle was 0x1000, so the tightened
+  rule alone trades a real detection for precision. Splitting into two
+  tiers keeps the signal without inflating the high-confidence alert count.
+logsource:
+  channel: Microsoft-Windows-Sysmon/Operational
+detection:
+  EventID: {equals: "10"}
+  TargetImage: {contains_any: [lsass.exe]}
+  GrantedAccess: {bitmask_none: ["0x10", "0x20", "0x08"]}
+  SourceImage:
+    not_contains:
+      - '\wbem\wmiprvse.exe'
+      - '\windows\system32\csrss.exe'
+      - '\windows\system32\wininit.exe'
+      - '\windows\system32\services.exe'
+      - '\windows\system32\lsass.exe'
+      - '\windowsdefender\msmpeng.exe'
+      - '\windows defender\msmpeng.exe'

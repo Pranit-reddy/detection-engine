@@ -1,0 +1,13 @@
+title: Process access originating from unbacked memory
+id: unbacked_call_trace
+attack: T1055
+severity: high
+description: >
+  A call trace contains frames not backed by any DLL on disk,
+  indicating code executing from injected memory regions.
+detection:
+  EventID:
+    equals: "10"
+  CallTrace:
+    contains_any:
+      - "UNKNOWN("

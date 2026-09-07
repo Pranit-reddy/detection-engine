@@ -1,0 +1,17 @@
+title: Event log cleared
+id: event_log_cleared
+attack: T1070.001
+severity: high
+confidence: low
+description: Log clearing is anti-forensic and rarely legitimate.
+corpus_caveat: >
+  Fires on 26 of 278 samples, every one at event position 1, because the
+  corpus author cleared logs before each capture. Only 2 samples represent
+  genuine adversary log clearing. Precision cannot be measured against this
+  dataset; the rule is retained because the behaviour is high value in
+  production, where an equivalent rule would need to exclude scheduled
+  maintenance and imaging workflows.
+logsource:
+  provider: Microsoft-Windows-Eventlog
+detection:
+  EventID: {equals_any: ["104", "1102"]}

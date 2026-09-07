@@ -1,0 +1,16 @@
+title: Child process of an auto-elevating binary
+id: uac_bypass_parent
+attack: T1548.002
+severity: high
+description: Auto-elevating Windows binaries spawning children is a common UAC bypass.
+detection:
+  EventID: {equals: "1"}
+  ParentImage:
+    contains_any:
+      - fodhelper.exe
+      - computerdefaults.exe
+      - eventvwr.exe
+      - sdclt.exe
+      - slui.exe
+      - wsreset.exe
+      - cmstp.exe

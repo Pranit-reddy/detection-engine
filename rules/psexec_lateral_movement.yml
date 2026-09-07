@@ -1,0 +1,8 @@
+title: PsExec-style remote execution
+id: psexec_lateral_movement
+attack: T1570
+severity: high
+description: PsExec service artifacts or command line indicators.
+detection:
+  EventID: {equals: "1"}
+  CommandLine: {contains_any: [psexesvc, 'psexec', '-accepteula', 'paexec', 'remcom']}

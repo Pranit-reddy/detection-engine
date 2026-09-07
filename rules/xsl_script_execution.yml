@@ -1,0 +1,8 @@
+title: XSL script execution via msxsl or wmic
+id: xsl_script_execution
+attack: T1220
+severity: high
+description: XSL transforms used to execute embedded script, bypassing allowlists.
+detection:
+  EventID: {equals: "1"}
+  CommandLine: {contains_any: ['msxsl.exe', '/format:', '.xsl']}
