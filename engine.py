@@ -68,6 +68,13 @@ def rule_matches(event, rule):
     return True
 
 
+def threshold_key(event, field):
+    """How a value is normalised when counting distinct values for a threshold:
+    lower-cased, with any directory path removed (so C:\\a\\Whoami.exe and
+    D:\\b\\whoami.exe count as one binary)."""
+    return str(event.get(field)).lower().split("\\")[-1]
+
+
 def apply_threshold(matches, rule):
     """Second stage: require N distinct values of a field across matches."""
     threshold = rule.get("threshold")
@@ -75,10 +82,7 @@ def apply_threshold(matches, rule):
         return matches
     field = threshold["distinct_field"]
     needed = int(threshold["min_count"])
-    seen = {
-        str(e.get(field)).lower().split("\\")[-1]
-        for e in matches if e.get(field)
-    }
+    seen = {threshold_key(e, field) for e in matches if e.get(field)}
     return matches if len(seen) >= needed else []
 
 

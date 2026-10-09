@@ -34,16 +34,37 @@ def flatten(record_xml):
     return event
 
 
+def iter_events(path, chunk_range=None):
+    """Yield one flat dictionary per event, without holding the file in memory.
+
+    An .evtx file is a sequence of independent 64 KB chunks.  chunk_range=(start,
+    stop) restricts parsing to chunks start..stop-1, which lets very large logs
+    be split across processes.  Yielding every range in order gives exactly the
+    same events, in the same order, as parsing the whole file.
+    """
+    with evtx.Evtx(path) as log:
+        for index, chunk in enumerate(log.chunks()):
+            if chunk_range is not None:
+                if index < chunk_range[0]:
+                    continue
+                if index >= chunk_range[1]:
+                    break
+            for record in chunk.records():
+                try:
+                    yield flatten(record.xml())
+                except ET.ParseError:
+                    continue
+
+
+def count_chunks(path):
+    """Number of 64 KB chunks in an .evtx file (used to split work)."""
+    with evtx.Evtx(path) as log:
+        return sum(1 for _ in log.chunks())
+
+
 def parse_file(path):
     """Parse every event in an .evtx file into a list of dictionaries."""
-    events = []
-    with evtx.Evtx(path) as log:
-        for record in log.records():
-            try:
-                events.append(flatten(record.xml()))
-            except ET.ParseError:
-                continue
-    return events
+    return list(iter_events(path))
 
 
 if __name__ == "__main__":
