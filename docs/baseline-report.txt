@@ -1,0 +1,38 @@
+# Output of: python baseline.py benign/Logs_Client --show 5
+# Data: NextronSystems/evtx-baseline v0.8.5, win10-client.tgz (sha256 d48f1b328d48db6c6dfaa9b6e232dbb454d93e833c6e1248efc0faf690b6808e)
+# Code: detection-engine commit 29b3ebb, 2 worker processes, ~29 minutes
+
+BASELINE: 352 benign files, 766,623 events scanned
+
+RULE                                   ALERTS  FILES   PER 10K
+--------------------------------------------------------------
+unbacked_call_trace                       537      1      7.00
+registry_run_key_persistence              334      1      4.36
+create_remote_thread (low)                 63      1      0.82
+lsass_query_only_access (low)              29      1      0.38
+lsass_process_access                       28      1      0.37
+scheduled_task_creation                    26      1      0.34
+service_installed                          26      1      0.34
+credential_dump_commandline                 3      1      0.04
+powershell_suspicious_flags                 2      1      0.03
+uac_bypass_registry                         2      1      0.03
+event_log_cleared (low)                     1      1      0.01
+service_creation_commandline                1      1      0.01
+browser_spawns_shell                        0      0      0.00
+discovery_recon_burst                       0      0      0.00
+lolbin_download                             0      0      0.00
+mshta_remote_execution                      0      0      0.00
+ntds_extraction                             0      0      0.00
+psexec_lateral_movement                     0      0      0.00
+recovery_destruction                        0      0      0.00
+registry_hive_dump                          0      0      0.00
+regsvr32_scriptlet                          0      0      0.00
+rundll32_lolbas_export                      0      0      0.00
+uac_bypass_parent                           0      0      0.00
+wmi_event_subscription                      0      0      0.00
+wmi_remote_execution                        0      0      0.00
+wmiprvse_spawned_shell                      0      0      0.00
+xsl_script_execution                        0      0      0.00
+--------------------------------------------------------------
+TOTAL ALERTS                             1052
+Rules that never fired on benign data: 15 of 27

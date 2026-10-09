@@ -65,6 +65,13 @@ wmiprvse_spawned_shell                           9
 xsl_script_execution                             4
 ```
 
+![Coverage by ATT&CK tactic, split into substantive and hollow coverage](docs/coverage.png)
+
+The chart splits each tactic's caught files into those caught by a
+normal-confidence rule (blue) and those caught only by low-confidence rules
+(orange). Command and Control's single detection is entirely orange, so its real
+coverage is zero. Regenerate it with `python chart.py` after a scan.
+
 Two figures are reported because they disagree, and the disagreement is the point.
 
 **Headline coverage** counts any file where at least one rule fired.
@@ -104,6 +111,13 @@ or provider.
 **Threshold rules.** Some behaviour is only suspicious in aggregate. A rule may
 declare a `threshold` requiring N distinct values of a field across all matching
 events, evaluated as a second stage after per-event matching.
+
+**Relationship to Sigma.** [Sigma](https://github.com/SigmaHQ/sigma) is the open
+standard most teams share detection rules in. This project's format is a smaller
+one that the engine evaluates directly, which keeps the engine short and the
+matching rules explicit. `sigma/` translates three rules to Sigma and records where
+the translation is lossy: Sigma has no bitmask operator, and thresholds become
+separate correlation rules.
 
 ## Findings
 
@@ -205,17 +219,82 @@ I am treating file boundary as a proxy for a time window here. Against live
 telemetry this would need to be a windowed, per-host correlation, which this corpus
 cannot support because it has no continuous timeline.
 
+## False positives on benign data
+
+Coverage only answers half the question. `baseline.py` answers the other half by
+running the same rules over logs from a machine where nothing malicious happened,
+so every alert is a candidate false positive.
+
+**Data.** [NextronSystems/evtx-baseline](https://github.com/NextronSystems/evtx-baseline)
+(Apache-2.0), `win10-client.tgz` from release v0.8.5: logs from a clean Windows 10 VM
+with Sysmon installed, produced by installing common software and basic user
+interaction. That is 352 `.evtx` files and 766,623 events.
+
+```bash
+curl -L -o win10-client.tgz https://github.com/NextronSystems/evtx-baseline/releases/download/v0.8.5/win10-client.tgz
+mkdir benign && tar -xzf win10-client.tgz -C benign
+python baseline.py benign/Logs_Client --show 5
+```
+
+The scan streams each log and splits the 800 MB Sysmon file across processes. It took
+about 29 minutes on 2 cores. The full report is in `docs/baseline-report.txt`.
+
+**Result.** 1,052 alerts across 766,623 events (13.7 per 10,000 events), all from just
+two of the 352 files (the Sysmon log and `System.evtx`). 15 of the 27 rules never
+fired. The 12 that did:
+
+| Rule | Alerts | Per 10k | What set it off (from the samples reviewed) |
+|---|---|---|---|
+| `unbacked_call_trace` | 537 | 7.00 | `explorer.exe` accessing `RuntimeBroker.exe` |
+| `registry_run_key_persistence` | 334 | 4.36 | an Opera installer writing registry values |
+| `create_remote_thread` (low) | 63 | 0.82 | Windows Defender's `MsMpEng.exe` creating threads in installer processes |
+| `lsass_query_only_access` (low) | 29 | 0.38 | a Zoom plugin, a Dropbox updater, a temporary installer |
+| `lsass_process_access` | 28 | 0.37 | `MsiExec.exe`, the Windows Installer |
+| `scheduled_task_creation` | 26 | 0.34 | `schtasks.exe` run by Office's updater and installers |
+| `service_installed` | 26 | 0.34 | new services (Event ID 7045); service names not inspected |
+| `credential_dump_commandline` | 3 | 0.04 | the word `minidump` inside a Dropbox crash-report URL |
+| `powershell_suspicious_flags` | 2 | 0.03 | Office setup launching PowerShell with `-NoProfile -NonInteractive` |
+| `uac_bypass_registry` | 2 | 0.03 | registry writes by a temporary installer executable |
+| `event_log_cleared` (low) | 1 | 0.01 | Event ID 104 in `System.evtx` |
+| `service_creation_commandline` | 1 | 0.01 | `sc.exe create` run by the Dropbox installer |
+
+**What this shows.**
+
+- Nine of the twelve rules that fired are normal-confidence rules, so the
+  `confidence: low` tier does not cover the noise on this machine. The three
+  low-confidence rules produced only 93 of the 1,052 alerts.
+- `unbacked_call_trace` is the noisiest rule by a wide margin. It is also one of the
+  most productive on the attack corpus (24 files), so the cost of tightening it is a
+  trade-off to measure, as in finding 2.
+- `lsass_process_access` fired on `MsiExec.exe` in every sample reviewed, a Windows
+  component that is not on the rule's `SourceImage` exclusion list.
+- `credential_dump_commandline` shows the limit of substring matching: a short keyword
+  matched inside an unrelated URL.
+- Alerts are events, not incidents. One installer run produced hundreds of registry
+  alerts, so the number of cases an analyst would handle is far smaller than 1,052.
+- No rules were changed in response. Changing them would move the coverage figures
+  above, so each change should be re-measured against both corpora.
+
+**Caveats.** This is one clean Windows 10 client VM observed for roughly a day, not a
+server or domain environment. It was captured with a custom Sysmon configuration, so
+absolute rates will differ under other configurations. The dataset is described as
+goodware and the alerts that were reviewed all look like ordinary installer and
+Windows behaviour, but the logs were not audited event by event. A rule that stays
+silent here is encouraging, not proven precise.
+
 ## Limitations
 
-- **Precision is unmeasurable against this corpus.** Every sample contains attack
-  activity; there is no benign baseline. Improvements to rule precision are
-  directional, not quantified.
+- **Precision is only partly measurable.** The attack corpus has no benign activity,
+  so `baseline.py` adds one public benign set (above). That is a single clean VM, so
+  false-positive rates are indicative, not representative of a production network.
 - **Threshold rules use file boundary as a proxy for a time window.** The corpus
   provides no continuous timeline. Against live telemetry these rules would need
   rewriting as windowed, per-host correlations.
 - **No sequence or cross-host correlation.** Each event is evaluated independently
   apart from the threshold stage.
-- **Windows Sysmon and Security channel only.**
+- **Windows event logs only, mostly Sysmon.** Most rules read Sysmon events. A few
+  use other Windows sources (the Event Log provider for log clearing, the Service
+  Control Manager for service installs). There is no Linux or macOS telemetry.
 
 ## Running it
 
@@ -234,14 +313,30 @@ Single file:
 python engine.py "samples/Execution/exec_driveby_cve-2018-15982_sysmon_1_10.evtx"
 ```
 
+Tests and the coverage chart (these need `pip install -r requirements-dev.txt`):
+
+```bash
+python -m pytest -q                      # 70+ fast tests, no log files needed
+EVTX_SAMPLES=samples python -m pytest -q # also runs the real-file integration tests
+python chart.py                          # redraws docs/coverage.png from results.json
+```
+
 ## Layout
 
 ```
-engine.py    rule loading, matching, threshold evaluation
-parse.py     EVTX to flat dictionaries
-matrix.py    corpus scan and coverage reporting
-peek.py      raw XML inspection for a single file
-rules/       27 detection rules
+engine.py            rule loading, matching, threshold evaluation
+parse.py             EVTX to flat dictionaries (streaming, can split a file into chunks)
+matrix.py            attack-corpus scan and coverage reporting
+baseline.py          benign-log scan: false positives per rule
+chart.py             draws the per-tactic coverage chart
+peek.py              raw XML inspection for a single file
+coverage.txt         saved copy of the coverage report
+rules/               27 detection rules (this project's YAML format)
+sigma/               3 of those rules translated to Sigma, with notes on the gaps
+tests/               unit tests, plus integration tests that need real .evtx files
+docs/coverage.png    the chart shown above
+requirements.txt     runtime dependencies
+requirements-dev.txt adds pytest and matplotlib
 ```
 
-The sample corpus is not vendored into this repository.
+Neither sample corpus is vendored into this repository.
