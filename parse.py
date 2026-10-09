@@ -51,10 +51,3 @@ if __name__ == "__main__":
     print(f"Parsed {len(events)} events\n")
     for event in events[:3]:
         print(json.dumps(event, indent=2))
-        hits = [
-        e for e in events
-        if "encodedcommand" in (e.get("CommandLine") or "").lower()
-    ]
-    print(f"\n>>> {len(hits)} events matched 'EncodedCommand'")
-    for hit in hits[:2]:
-        print(hit.get("CommandLine"))

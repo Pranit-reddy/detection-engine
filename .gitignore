@@ -1,6 +1,8 @@
 venv/
 samples/
+benign/
 __pycache__/
 *.pyc
+.pytest_cache/
 results.json
 .DS_Store
