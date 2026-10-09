@@ -1,0 +1,48 @@
+title: LSASS Memory Read Access
+id: 9a1948f9-9867-46e4-b225-fd7142c659bc
+status: experimental
+description: >
+    A process obtained a handle to LSASS with memory read or write rights,
+    a precondition for credential dumping. Sigma version of
+    rules/lsass_process_access.yml.
+    APPROXIMATION: the original uses a bitmask test (any of PROCESS_VM_READ
+    0x10, PROCESS_VM_WRITE 0x20, PROCESS_VM_OPERATION 0x08). Sigma has no
+    bitmask operator, so the GrantedAccess values below are the exact values
+    that rule matched across the 278-sample EVTX-ATTACK-SAMPLES corpus. A
+    tool requesting a different combination of rights would be missed.
+references:
+    - https://attack.mitre.org/techniques/T1003/001/
+author: Pranit-reddy
+date: 2026-10-09
+tags:
+    - attack.credential-access
+    - attack.t1003.001
+logsource:
+    category: process_access
+    product: windows
+detection:
+    selection:
+        TargetImage|endswith: '\lsass.exe'
+        GrantedAccess:
+            - '0x001fffff'
+            - '0x001f1fff'
+            - '0x00101ffb'
+            - '0x00001410'
+            - '0x00001010'
+            - '0x0000143a'
+    filter_main_system:
+        SourceImage|contains:
+            - '\wbem\wmiprvse.exe'
+            - '\windows\system32\csrss.exe'
+            - '\windows\system32\wininit.exe'
+            - '\windows\system32\services.exe'
+            - '\windows\system32\lsass.exe'
+    filter_main_defender:
+        SourceImage|contains:
+            - '\windowsdefender\msmpeng.exe'
+            - '\windows defender\msmpeng.exe'
+    condition: selection and not 1 of filter_main_*
+falsepositives:
+    - Antivirus, EDR and inventory tools that read LSASS memory
+    - Allowlisting services.exe by path is bypassable when an attacker injects code into it (see README finding 3)
+level: critical

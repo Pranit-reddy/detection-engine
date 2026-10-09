@@ -1,0 +1,40 @@
+title: Browser or Office Application Spawned a Shell
+id: bb1f1aa5-bca9-4284-902e-77d97fef05a2
+status: experimental
+description: >
+    A browser or mail client launched a command interpreter. These
+    applications render content; they do not legitimately execute shell
+    commands. Strong indicator of exploitation or a malicious attachment.
+    Sigma version of rules/browser_spawns_shell.yml.
+references:
+    - https://attack.mitre.org/techniques/T1203/
+author: Pranit-reddy
+date: 2026-10-09
+tags:
+    - attack.execution
+    - attack.t1203
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_parent:
+        ParentImage|contains:
+            - iexplore.exe
+            - chrome.exe
+            - firefox.exe
+            - msedge.exe
+            - outlook.exe
+            - winword.exe
+            - excel.exe
+    selection_child:
+        Image|contains:
+            - cmd.exe
+            - powershell.exe
+            - wscript.exe
+            - cscript.exe
+            - mshta.exe
+    condition: selection_parent and selection_child
+falsepositives:
+    - Browser extensions or helper apps that legitimately launch a shell
+    - Office macros used by internal tooling
+level: high

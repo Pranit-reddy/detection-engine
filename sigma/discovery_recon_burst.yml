@@ -1,0 +1,69 @@
+title: Reconnaissance Utility Execution
+name: recon_utility_execution
+id: 92625700-6ae8-43ec-824c-e08ae1ce8211
+status: experimental
+description: >
+    Execution of a built-in enumeration utility. On its own this is routine
+    administrative activity, so this base rule is not meant to alert. It is
+    consumed by the correlation rule below.
+references:
+    - https://attack.mitre.org/techniques/T1082/
+author: Pranit-reddy
+date: 2026-10-09
+tags:
+    - attack.discovery
+    - attack.t1082
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|contains:
+            - whoami.exe
+            - nltest.exe
+            - systeminfo.exe
+            - net1.exe
+            - net.exe
+            - quser.exe
+            - arp.exe
+            - route.exe
+            - netstat.exe
+            - dsquery.exe
+            - adfind.exe
+            - ipconfig.exe
+            - tasklist.exe
+            - hostname.exe
+    condition: selection
+falsepositives:
+    - Administrators run these utilities constantly
+level: informational
+---
+title: Multiple Distinct Reconnaissance Utilities
+id: 9af1ee2f-697f-4623-b798-10bcb49de6db
+status: experimental
+description: >
+    Three or more distinct enumeration utilities on the same host within a
+    time window, characteristic of an operator orienting on a newly accessed
+    host. Sigma correlation version of rules/discovery_recon_burst.yml.
+    The original uses one capture file as a proxy for a time window because
+    the sample corpus has no continuous timeline; here the window is explicit
+    and grouped per host, which is how it would run against live telemetry.
+    The 10 minute window is an assumption to be tuned per environment.
+author: Pranit-reddy
+date: 2026-10-09
+tags:
+    - attack.discovery
+    - attack.t1082
+correlation:
+    type: value_count
+    rules:
+        - recon_utility_execution
+    group-by:
+        - Computer
+    timespan: 10m
+    condition:
+        gte: 3
+        field: Image
+falsepositives:
+    - Administrators or scripts running several enumeration commands in a row
+level: medium
